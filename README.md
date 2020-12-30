@@ -1,2 +1,4 @@
-# chunk-change-time-webpack-plugin
-chunk change time webpack plugin
+# Chunk Change Time Webpack Plugin
+
+A Webpack plugin to record chunk chang time
+
