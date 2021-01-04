@@ -4,4 +4,4 @@ A Webpack plugin to record chunk chang time
 
 ### result
 
-![png](./img)
+![png](./img.png)
