@@ -1,6 +1,6 @@
 {
   "name": "chunk-change-time-webpack-plugin",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "chunk change time webpack plugin",
   "main": "src/index.js",
   "scripts": {
