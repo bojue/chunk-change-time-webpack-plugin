@@ -8,6 +8,7 @@ const COL_BLUE = '\x1b[34m';
 const COL_MAGENTA = '\x1b[35m';
 let logName = 'chunk-change-time-webpack-plugin';
 let watchRunTime = 0;
+let chunkVersions = {}
 
 class ChunkChangeTimeWebpackPlugin {
     constructor(options){
@@ -15,13 +16,14 @@ class ChunkChangeTimeWebpackPlugin {
             options = {}
         }
         logName = options.logName ||  options.name || logName;
+        watchRunTime = 0;
+        chunkVersions = {};
     }
 
     apply(compiler) {
         compiler.hooks.watchRun.tap(pluginName, (watching) => {
             this.startRun();
             this.webpackEventLog('watch-run');
-            watchRunTime = this.uiltGetTime()
             const MTimes = watching.watchFileSystem.watcher.mtimes;
             const changedFiles = Object.keys(MTimes)
                 .map(file => `${file}`)
@@ -33,35 +35,31 @@ class ChunkChangeTimeWebpackPlugin {
         })
 
         compiler.hooks.compile.tap(pluginName, () => {
-            this.webpackEventLog('compile')
+            this.webpackEventLog('compile', this.uiltGetChangeTime());
         })
 
         compiler.hooks.compilation.tap(pluginName, (compilation) => {
-            this.webpackEventLog('compilation')
-            // compilation.hooks.buildModule.tap(pluginName, module => {
-            //         module.useSourceMap = true;
-            //     }
-            // )
-            // compilation.hooks.seal.tap(pluginName, module => {
-           
-            // })
-        })
-
-        compiler.hooks.shouldEmit.tap(pluginName, (comp)=> {
-
+            this.webpackEventLog('compilation', this.uiltGetChangeTime());
         })
 
         compiler.hooks.emit.tap(pluginName, (compilation) => {
-            let changeTime = this.uiltGetChangeTime();
-            this.webpackEventLog('event', changeTime);
-            // compilation.chunks.forEach( chunk => {
-            //     console.log("--------> \n", chunk)
-            // })
+            this.webpackEventLog('emit', this.uiltGetChangeTime());
+            let changeChunks = compilation.chunks.filter(chunk => {
+                var _oldVers = chunkVersions[chunk.name];
+                chunkVersions[chunk.name] = chunk.hash;
+                return chunk.hash !== _oldVers;
+            });
+            changeChunks.forEach(chunk => {
+                chunk.files.forEach((filename, index) => {
+                    this.chunckChangeFile(filename, 'chunk', index)
+                });
+            })
         })
         compiler.hooks.afterCompile.tap(pluginName, ()=> {
-            this.webpackEventLog('after-compile')
+            this.webpackEventLog('after-compile', this.uiltGetChangeTime());
         })
         compiler.hooks.done.tap(pluginName, ()=> {
+            this.webpackEventLog('done', this.uiltGetChangeTime());
             console.info(COL_YELLOW)
             console.timeEnd(timeState)
         })
@@ -86,6 +84,9 @@ class ChunkChangeTimeWebpackPlugin {
     }
 
     webpackEventLog(event, changeTime = null, FONT_COL = COL_MAGENTA) {
+        if(event === 'watch-run') {
+            watchRunTime = this.uiltGetTime();
+        }
         let pre = `[chunk-change-event] `;
         let last = `...`;
         if(!changeTime) {
@@ -93,23 +94,22 @@ class ChunkChangeTimeWebpackPlugin {
             console.info(FONT_COL, info);
         } else {
             let info = `${pre} ${event} ==>`;
-            let timeVal = `${changeTime} ms`;
+            let timeVal = `${changeTime} ${COL_YELLOW} ms from watch-run`;
             console.info(FONT_COL, info, COL_BLUE, timeVal);
         }
-
     }
 
-    chunckChangeFile(file, changeIndex = -1, FONT_COL = COL_GREEN) {
-        let pre = `[change-file] ===> `;
+    chunckChangeFile(file, state = 'file', changeIndex = -1, FONT_COL = COL_GREEN) {
+        let pre = state === 'file' ? `[file-change] ===> ` : `[webpack-chunk-change] ===> `;
         console.log(FONT_COL, `${pre} ${changeIndex > -1 ? changeIndex : ''} ${file}`)
-    }
-
-    uiltGetTime() {
-        return Date.parse(new Date());
     }
 
     uiltGetChangeTime() {
         return this.uiltGetTime() - watchRunTime;
+    }
+
+    uiltGetTime() {
+        return Date.parse(new Date());
     }
 }
 
