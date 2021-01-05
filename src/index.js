@@ -6,9 +6,11 @@ const COL_YELLOW = '\x1b[33m';
 const COL_GREEN = '\x1b[32m';
 const COL_BLUE = '\x1b[34m';
 const COL_MAGENTA = '\x1b[35m';
+const COL_WHITE = '\x1b[37m';
 let logName = 'chunk-change-time-webpack-plugin';
 let watchRunTime = 0;
 let chunkVersions = {}
+let chunkIndex = 0;
 
 class ChunkChangeTimeWebpackPlugin {
     constructor(options){
@@ -23,6 +25,7 @@ class ChunkChangeTimeWebpackPlugin {
     apply(compiler) {
         compiler.hooks.watchRun.tap(pluginName, (watching) => {
             this.startRun();
+            chunkIndex = 0;
             this.webpackEventLog('watch-run');
             const MTimes = watching.watchFileSystem.watcher.mtimes;
             const changedFiles = Object.keys(MTimes)
@@ -60,6 +63,7 @@ class ChunkChangeTimeWebpackPlugin {
         })
         compiler.hooks.done.tap(pluginName, ()=> {
             this.webpackEventLog('done', this.uiltGetChangeTime());
+            console.info(`${COL_MAGENTA} [Build at] ===> ${COL_BLUE}${new Date()}`)
             console.info(COL_YELLOW)
             console.timeEnd(timeState)
         })
@@ -78,7 +82,7 @@ class ChunkChangeTimeWebpackPlugin {
 
     startRun() {
         if(logName !== null) {
-            console.info(`----- ${logName} ------`)
+            console.info(`\n----- ${logName} ------`)
         }
         console.time(timeState)
     }
@@ -94,14 +98,14 @@ class ChunkChangeTimeWebpackPlugin {
             console.info(FONT_COL, info);
         } else {
             let info = `${pre} ${event} ==>`;
-            let timeVal = `${changeTime} ${COL_YELLOW} ms from watch-run`;
+            let timeVal = `${changeTime}${COL_MAGENTA} ms from watch-run`;
             console.info(FONT_COL, info, COL_BLUE, timeVal);
         }
     }
 
     chunckChangeFile(file, state = 'file', changeIndex = -1, FONT_COL = COL_GREEN) {
         let pre = state === 'file' ? `[file-change] ===> ` : `[webpack-chunk-change] ===> `;
-        console.log(FONT_COL, `${pre} ${changeIndex > -1 ? changeIndex : ''} ${file}`)
+        console.log(FONT_COL, `${pre} ${changeIndex > -1 ? ++chunkIndex : ''} ${file}`)
     }
 
     uiltGetChangeTime() {
