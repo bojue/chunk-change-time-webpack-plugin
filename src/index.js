@@ -109,7 +109,7 @@ class ChunkChangeTimeWebpackPlugin {
     }
 
     uiltGetTime() {
-        return Date.parse(new Date());
+        return new Date().getTime()
     }
 }
 
