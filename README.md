@@ -18,7 +18,7 @@ npm i chunk-change-time-webpack-plugin
 | name | valueType | value/def-value| description |
 |----|----|----|----|
 |name | string |chunk-change-time-webpack-plugin | custom name|
-|ignoreSorceMapInfoBool | boolen | true | ingore sorce-map file change information|
+|ignoreSorceMapInfoBool | boolean | true | ingore sorce-map file change information|
 
 ### use
 
