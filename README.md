@@ -13,16 +13,25 @@ A Webpack plugin to record chunk chang time
 npm i chunk-change-time-webpack-plugin
 
 ```
+### API
+
+| name | valueType | value/def-value| description |
+|----|----|----|----|
+|name | string |chunk-change-time-webpack-plugin | custom name|
+|ignoreSorceMapInfoBool | boolen | true | ingore sorce-map file change information|
 
 ### use
 
 ```javascript
 
 new chunkChangeWebpackPlugin({
-    name:'chunk-change-time-webpack-plugin' // custom name 
-})
-
+    name:'chunk-change-time-webpack-plugin',
+    ignoreSorceMapInfoBool:true, 
+}),
 ```
+
+
+
 ### result
 
 ![png](./src/img.png)

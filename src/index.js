@@ -8,6 +8,7 @@ const COL_BLUE = '\x1b[34m';
 const COL_MAGENTA = '\x1b[35m';
 const COL_WHITE = '\x1b[37m';
 let logName = 'chunk-change-time-webpack-plugin';
+let ignoreSorceMapInfoBool = true;
 let watchRunTime = 0;
 let chunkVersions = {}
 let chunkIndex = 0;
@@ -18,6 +19,7 @@ class ChunkChangeTimeWebpackPlugin {
             options = {}
         }
         logName = options.logName ||  options.name || logName;
+        ignoreSorceMapInfoBool = options.ignoreSorceMapInfoBool === false ? false : ignoreSorceMapInfoBool;
         watchRunTime = 0;
         chunkVersions = {};
     }
@@ -53,8 +55,15 @@ class ChunkChangeTimeWebpackPlugin {
                 return chunk.hash !== _oldVers;
             });
             changeChunks.forEach(chunk => {
+                let _index = 0;
                 chunk.files.forEach((filename, index) => {
-                    this.chunckChangeFile(filename, 'chunk', index)
+                    if(ignoreSorceMapInfoBool && filename.indexOf('.js.map') === -1) {
+                        _index ++;
+                        this.chunckChangeFile(filename, 'chunk', _index)
+                    }else if(!ignoreSorceMapInfoBool){
+                        this.chunckChangeFile(filename, 'chunk', index)
+                    }
+                
                 });
             })
         })
